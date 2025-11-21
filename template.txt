@@ -104,10 +104,6 @@
         "Regards,",
         name
     ] -%}
-    {%- if contact_links -%}
-        {%- set labels = contact_links | map(attribute='label') | list -%}
-        {%- set goodbye_lines = goodbye_lines + [labels | join(" | ")] -%}
-    {%- endif -%}
     {%- set _ = letter.blocks.append(goodbye_lines | join('\n')) -%}
 {%- endif -%}
 

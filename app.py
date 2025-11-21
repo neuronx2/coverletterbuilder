@@ -1,4 +1,5 @@
 import html
+import re
 from pathlib import Path
 from typing import Callable
 
@@ -7,11 +8,15 @@ import yaml
 from jinja2 import Template
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.opc.constants import RELATIONSHIP_TYPE
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.colors import HexColor
 from reportlab.platypus import Paragraph, SimpleDocTemplate
 
 PROFILE_FILES = {
@@ -146,6 +151,9 @@ LANGUAGE_STRINGS = {
             "Tip: Update 'profile.yaml' for reusable info like contact links, tweak 'degrees.yaml' / "
             "'certifications.yaml' for credentials, and edit the 'skills_*.yaml' files to set default skills per block."
         ),
+        "bold_helper_label": "Text to bold",
+        "bold_helper_placeholder": "Select text then enter it here (exact match)",
+        "bold_helper_button": "Apply bold",
     },
     "de": {
         "language_select_label": "Sprache",
@@ -231,6 +239,9 @@ LANGUAGE_STRINGS = {
             "Tipp: Aktualisieren Sie 'profile.yaml' für wiederkehrende Infos, passen Sie 'degrees.yaml' / "
             "'certifications.yaml' für Abschlüsse/Zertifizierungen an und pflegen Sie die Dateien 'skills_*.yaml' pro Block."
         ),
+        "bold_helper_label": "Text zum Hervorheben (fett)",
+        "bold_helper_placeholder": "Markieren und hier exakt einfügen",
+        "bold_helper_button": "Fett anwenden",
     },
 }
 DEFAULT_LANGUAGE_STRINGS = LANGUAGE_STRINGS[DEFAULT_LANGUAGE]
@@ -264,6 +275,68 @@ def _load_skill_sources(language: str) -> dict[str, list[str]]:
         path = Path(f"{block['file_stem']}{suffix}.yaml")
         sources[block["id"]] = _load_list_from_file(path, "skills") or []
     return sources
+
+
+def _normalize_contact_url(value: str) -> str | None:
+    if not value:
+        return None
+    value = value.strip()
+    if not value:
+        return None
+    lowered = value.lower()
+    if lowered.startswith(("http://", "https://", "mailto:", "tel:")):
+        return value
+    if value.startswith("www."):
+        return f"https://{value}"
+    if "@" in value and " " not in value:
+        return f"mailto:{value}"
+    digits = "".join(ch for ch in value if ch.isdigit())
+    if digits and len(digits) >= 5:
+        return f"tel:{value}"
+    if "." in value and " " not in value:
+        return f"https://{value}"
+    return None
+
+
+def _build_contact_entries(raw_entries: list[dict[str, str]]) -> list[dict[str, str]]:
+    entries: list[dict[str, str]] = []
+    for entry in raw_entries:
+        if not isinstance(entry, dict):
+            continue
+        value = (entry.get("value") or "").strip()
+        if not value:
+            continue
+        label = (entry.get("label") or value).strip()
+        entries.append({"label": label, "value": value, "url": _normalize_contact_url(value)})
+    return entries
+
+
+BOLD_PATTERN = re.compile(r"\*\*(.+?)\*\*")
+
+
+def _segment_with_bold(text: str) -> list[tuple[str, bool]]:
+    segments: list[tuple[str, bool]] = []
+    last = 0
+    for match in BOLD_PATTERN.finditer(text):
+        if match.start() > last:
+            segments.append((text[last:match.start()], False))
+        segments.append((match.group(1), True))
+        last = match.end()
+    if last < len(text):
+        segments.append((text[last:], False))
+    if not segments:
+        segments.append((text, False))
+    return segments
+
+
+def _line_to_html(line: str) -> str:
+    chunks = []
+    for text, bold in _segment_with_bold(line):
+        if not text:
+            continue
+        escaped = html.escape(text)
+        chunks.append(f"<strong>{escaped}</strong>" if bold else escaped)
+    return "".join(chunks)
 
 
 def load_profile(path: Path):
@@ -372,6 +445,7 @@ def build_docx(
     sections_state: dict[str, bool],
     candidate_lines: list[str],
     candidate_line_consumed: int,
+    contact_items: list[dict[str, str]],
 ) -> BytesIO:
     """
     Create an in-memory .docx file from the cover letter text.
@@ -380,14 +454,22 @@ def build_docx(
     candidate_count = len(candidate_lines) if sections_state.get("candidate_block") else 0
     blocks = _split_blocks(text, skip_lines=candidate_line_consumed if candidate_count else 0)
 
+    def _append_line(paragraph, line: str) -> None:
+        for text, bold in _segment_with_bold(line):
+            if not text:
+                continue
+            run = paragraph.add_run(text)
+            run.bold = bold
+
     def add_block(lines: list[str], align_right: bool = False) -> None:
         for line in lines:
-            paragraph = doc.add_paragraph(line.strip() if align_right else line)
+            paragraph = doc.add_paragraph()
             if align_right:
                 paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             paragraph.paragraph_format.space_after = Pt(0)
             paragraph.paragraph_format.space_before = Pt(0)
             paragraph.paragraph_format.line_spacing = 1
+            _append_line(paragraph, line)
 
     if candidate_count:
         add_block(candidate_lines, align_right=True)
@@ -398,6 +480,7 @@ def build_docx(
             spacer = doc.add_paragraph("")
             spacer.paragraph_format.space_after = Pt(0)
             spacer.paragraph_format.space_before = Pt(0)
+    _append_contact_to_docx(doc, contact_items)
     buf = BytesIO()
     doc.save(buf)
     buf.seek(0)
@@ -409,6 +492,7 @@ def build_pdf(
     sections_state: dict[str, bool],
     candidate_lines: list[str],
     candidate_line_consumed: int,
+    contact_items: list[dict[str, str]],
 ) -> BytesIO:
     """Create an in-memory PDF using ReportLab platypus for better layout control."""
 
@@ -446,7 +530,11 @@ def build_pdf(
     story: list = []
 
     def para_text(lines: list[str]) -> str:
-        return "<br/>".join(html.escape(line) if line.strip() else "&nbsp;" for line in lines)
+        formatted: list[str] = []
+        for line in lines:
+            content = _line_to_html(line) if line.strip() else "&nbsp;"
+            formatted.append(content)
+        return "<br/>".join(formatted)
 
     if candidate_count:
         story.append(Paragraph(para_text(candidate_lines), candidate_style))
@@ -457,9 +545,97 @@ def build_pdf(
     if not story:
         story.append(Paragraph("", body_style))
 
+    _append_contact_to_story(story, contact_items, body_style)
     doc.build(story)
     buffer.seek(0)
     return buffer
+
+
+def _build_contact_html(entries: list[dict[str, str]]) -> str:
+    if not entries:
+        return ""
+    links: list[str] = []
+    for entry in entries:
+        label = html.escape(entry["label"])
+        url = entry.get("url")
+        if url:
+            links.append(
+                f"<a href='{html.escape(url)}' style='color:#1a73e8; font-size:0.85em; text-decoration:underline; font-weight:bold;' target='_blank'>{label}</a>"
+            )
+        else:
+            links.append(f"<span style='color:#1a73e8; font-size:0.85em; font-weight:bold;'>{label}</span>")
+    separator = "<span style='color:#1a73e8; font-size:0.85em; font-weight:bold;'>&nbsp;|&nbsp;</span>"
+    return "<div style='text-align:left;'>" + separator.join(links) + "</div>"
+
+
+def _add_hyperlink(paragraph, text: str, url: str, font_size_pt: float) -> None:
+    part = paragraph.part
+    r_id = part.relate_to(url, RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+    hyperlink = OxmlElement("w:hyperlink")
+    hyperlink.set(qn("r:id"), r_id)
+    new_run = OxmlElement("w:r")
+    rPr = OxmlElement("w:rPr")
+    color = OxmlElement("w:color")
+    color.set(qn("w:val"), "1A73E8")
+    rPr.append(color)
+    size = OxmlElement("w:sz")
+    size.set(qn("w:val"), str(int(font_size_pt * 2)))
+    rPr.append(size)
+    size_cs = OxmlElement("w:szCs")
+    size_cs.set(qn("w:val"), str(int(font_size_pt * 2)))
+    rPr.append(size_cs)
+    underline = OxmlElement("w:u")
+    underline.set(qn("w:val"), "single")
+    rPr.append(underline)
+    new_run.append(rPr)
+    text_elem = OxmlElement("w:t")
+    text_elem.text = text
+    new_run.append(text_elem)
+    hyperlink.append(new_run)
+    paragraph._p.append(hyperlink)
+
+
+def _append_contact_to_docx(doc: Document, entries: list[dict[str, str]]) -> None:
+    if not entries:
+        return
+    paragraph = doc.add_paragraph()
+    for idx, entry in enumerate(entries):
+        if idx > 0:
+            sep_run = paragraph.add_run(" | ")
+            sep_run.font.size = Pt(10)
+            sep_run.font.color.rgb = RGBColor(0x1A, 0x73, 0xE8)
+        label = entry["label"]
+        url = entry.get("url")
+        if url:
+            _add_hyperlink(paragraph, label, url, 10)
+        else:
+            label_run = paragraph.add_run(label)
+            label_run.font.size = Pt(10)
+            label_run.font.color.rgb = RGBColor(0x1A, 0x73, 0xE8)
+            label_run.font.underline = True
+
+
+def _append_contact_to_story(story: list, entries: list[dict[str, str]], base_style: ParagraphStyle) -> None:
+    if not entries:
+        return
+    contact_style = ParagraphStyle(
+        "Contact",
+        parent=base_style,
+        fontSize=10,
+        leading=12,
+        textColor=HexColor("#1A73E8"),
+    )
+    parts = []
+    for idx, entry in enumerate(entries):
+        if idx > 0:
+            parts.append("&nbsp;|&nbsp;")
+        label = entry["label"]
+        url = entry.get("url")
+        if url:
+            parts.append(f"<u><link href='{url}'>{label}</link></u>")
+        else:
+            parts.append(f"<u>{label}</u>")
+    story.append(Paragraph("".join(parts), contact_style))
 
 
 def _render_skill_selector(
@@ -838,6 +1014,8 @@ contact_links = [
     for entry in st.session_state.contact_entries
     if entry.get("value")
 ]
+raw_contact_entries = contact_links or profile.get("contact_links", [])
+contact_entries = _build_contact_entries(raw_contact_entries)
 
 # Use sidebar inputs for job information
 job_info = {
@@ -876,7 +1054,7 @@ context = {
     "home_region": home_region,
     "home_country": home_country,
     "home_location": home_location,
-    "contact_links": contact_links or profile.get("contact_links", []),
+    "contact_links": raw_contact_entries,
 }
 
 candidate_lines_plain = build_candidate_lines(context, sections)
@@ -902,12 +1080,39 @@ text_area_value = assemble_text_value(
 if not text_area_value:
     text_area_value = rendered_text
 
+state = st.session_state
+if "letter_text_content" not in state:
+    state.letter_text_content = text_area_value
+    state.letter_text_auto = text_area_value
+elif state.get("letter_text_auto") == state.letter_text_content:
+    state.letter_text_content = text_area_value
+    state.letter_text_auto = text_area_value
+
 st.subheader(t("text_area_subheader"))
-edited_text = st.text_area(
+st.text_area(
     t("text_area_label"),
-    value=text_area_value,
+    value=state.letter_text_content,
+    key="letter_text_content",
     height=450,
 )
+edited_text = state.letter_text_content
+
+bold_col1, bold_col2 = st.columns([2, 1])
+with bold_col1:
+    bold_text = st.text_input(
+        t("bold_helper_label"),
+        value="",
+        placeholder=t("bold_helper_placeholder"),
+        key="bold_helper_text",
+    )
+with bold_col2:
+    if st.button(t("bold_helper_button")) and bold_text.strip():
+        target = bold_text.strip()
+        if target in state.letter_text_content:
+            state.letter_text_content = state.letter_text_content.replace(target, f"**{target}**", 1)
+            state.letter_text_auto = state.letter_text_content
+            st.session_state.bold_helper_text = ""
+            st.experimental_rerun()
 
 preview_candidate_lines, preview_consumed = extract_candidate_lines_from_text(
     edited_text, candidate_lines_plain
@@ -920,14 +1125,18 @@ preview_blocks = _split_blocks(
 preview_parts = []
 if preview_candidate_lines:
     preview_parts.append(
-        "<div style='text-align:right;'>" + "<br>".join(html.escape(line) for line in preview_candidate_lines) + "</div>"
+        "<div style='text-align:right;'>" + "<br>".join(_line_to_html(line) for line in preview_candidate_lines) + "</div>"
     )
 for block in preview_blocks:
     preview_parts.append(
         "<div style='text-align:left;'>"
-        + "<br>".join(html.escape(line) for line in block)
+        + "<br>".join(_line_to_html(line) for line in block)
         + "</div>"
     )
+contact_html_block = _build_contact_html(contact_entries)
+if contact_html_block:
+    preview_parts.append(contact_html_block)
+
 preview_html = (
     "<div style='font-family: "
     "Courier New, monospace; white-space: pre-wrap; border:1px solid #ddd; padding:1rem; background:#f8f9fb;'>"
@@ -985,6 +1194,7 @@ with col1:
         sections,
         candidate_lines_for_export,
         consumed_candidate_lines,
+        contact_entries,
     )
     st.download_button(
         t("download_docx"),
@@ -999,6 +1209,7 @@ with col2:
         sections,
         candidate_lines_for_export,
         consumed_candidate_lines,
+        contact_entries,
     )
     st.download_button(
         t("download_pdf"),
