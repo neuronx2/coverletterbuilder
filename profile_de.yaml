@@ -1,0 +1,40 @@
+name: "Vor- und Nachname"
+address_line1: "Straße und Hausnummer"
+address_line2: ""
+city: "Stadt"
+region: "Region"
+country: "land"
+
+# Abschlüsse stehen in degrees.yaml, Zertifizierungen in certifications.yaml
+# Block-spezifische Skills liegen in den Dateien skills_*_de.yaml
+
+stakeholders:
+  - "Geschäftsführung"
+  - "Bereichsleitung"
+  - "Externe Partner"
+
+presented_to:
+  - "Vorstand"
+
+teams:
+  - "Marketing"
+  - "Sales"
+  - "Betrieb"
+  - "Finanzen"
+
+company_features:
+  - "datengetriebene Kultur"
+  - "kundenorientierter Fokus"
+  - "internationales Wachstum"
+
+languages: ["Deutsch", "Englisch"]
+
+contact_links:
+  - label: "E-Mail"
+    value: "max.mustermann@example.com"
+  - label: "LinkedIn"
+    value: "https://www.linkedin.com/in/beispiel"
+  - label: "Xing"
+    value: "https://www.xing.com/profile/beispiel"
+  - label: "Website"
+    value: "https://portfolio.example.com"

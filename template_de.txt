@@ -40,7 +40,7 @@
     {%- set intro_values = skills_intro if skills_intro else intro_defaults -%}
     {%- set intro_focus = intro_values[:3] if intro_values else intro_defaults -%}
     {%- set intro_lines = [
-        "Mit großem Interesse bewerbe ich mich auf die Position " ~ (position or "diese Stelle") ~ ", von der ich über " ~ awareness_source ~ " erfahren habe. Meine Motivation speist sich aus Erfahrungen in " ~ format_series(intro_focus) ~ "."
+        "mit großem Interesse habe ich Ihre Stellenanzeige gelesen. Mein Interesse an der Position als " ~ (position or "diese Stelle") ~ " beruht auf meiner Erfahrung in " ~ format_series(intro_focus) ~ "."
     ] -%}
     {%- set _ = letter.blocks.append(intro_lines | join('\n')) -%}
 {%- endif -%}
@@ -51,7 +51,7 @@
     {%- set job_a_focus = job_a_values[:3] if job_a_values else job_a_defaults -%}
     {%- set partner_line = stakeholders[0] ~ (" & " ~ stakeholders[1] if stakeholders|length > 1 else "") -%}
     {%- set market_lines = [
-        "In meiner letzten Rolle als Market Development Manager (Strategy) verantwortete ich strategische Initiativen zu " ~ format_series(job_a_focus) ~ ", arbeitete eng mit " ~ partner_line ~ " aus den Teams " ~ teams[0] ~ ", " ~ teams[1] ~ ", " ~ teams[2] ~ " und " ~ teams[3] ~ " zusammen und präsentierte Business-Cases vor " ~ presented_to[0] ~ "."
+        "In meiner letzten Rolle als Strategy Manager (New Market Development) leitete ich strategische Projekte in " ~ format_series(job_a_focus) ~ ", indem ich eng mit " ~ partner_line ~ " us den Bereichen " ~ teams[0] ~ ", " ~ teams[1] ~ ", " ~ teams[2] ~ " und " ~ teams[3] ~ " zusammen und präsentierte Business-Cases vor " ~ presented_to[0] ~ "."
     ] -%}
     {%- set _ = letter.blocks.append(market_lines | join('\n')) -%}
 {%- endif -%}
@@ -59,26 +59,26 @@
 {%- if sections.senior_bi -%}
     {%- set job_b_defaults = ["Datenanalysen", "Data Science"] -%}
     {%- set job_b_values = skills_job_block_b if skills_job_block_b else job_b_defaults -%}
-    {%- set _ = letter.blocks.append("Davor war ich Senior BI Analyst/Inhouse Consultant und setzte Ende-zu-Ende-Datenprojekte rund um " ~ format_series(job_b_values) ~ " um, um belastbare Insights zu liefern.") -%}
+    {%- set _ = letter.blocks.append("Vor meiner vorherigen Tätigkeit arbeitete ich als Senior BI Analyst/Inhouse Consultant, wo ich mein Verständnis von Daten und Infrastruktur nutzte, um bei HelloFresh (E-Commerce-Unternehmen) End-to-End-Datenprojekte mit den Schwerpunkten " ~ format_series(job_b_values) ~ " durchzuführen und Erkenntnisse zu gewinnen.") -%}
 {%- endif -%}
 
 {%- if sections.project_manager -%}
     {%- set job_c_defaults = ["Marktforschung", "Produkteinführungen", "Prozessoptimierung", "Change Management"] -%}
     {%- set job_c_values = skills_job_block_c if skills_job_block_c else job_c_defaults -%}
     {%- set job_c_focus = job_c_values[:4] if job_c_values else job_c_defaults -%}
-    {%- set _ = letter.blocks.append("Als Project Manager habe ich Marktforschungsinitiativen zu " ~ format_series(job_c_focus) ~ " gesteuert.") -%}
+    {%- set _ = letter.blocks.append("Als Projektmanager habe ich mehrere Projekte in den Bereichen " ~ format_series(job_c_focus) ~ " erfolgreich durchgeführt.") -%}
 {%- endif -%}
 
 {%- if sections.business_analytics -%}
     {%- set job_d_defaults = ["Change Enablement", "Analytics-Architektur"] -%}
     {%- set job_d_values = skills_job_block_d if skills_job_block_d else job_d_defaults -%}
-    {%- set _ = letter.blocks.append("Als Business Analytics Manager habe ich Veränderungsprogramme umgesetzt und Anforderungen in Analytics-Lösungen überführt, die auf " ~ format_series(job_d_values) ~ " basieren.") -%}
+    {%- set _ = letter.blocks.append("Als Business Analytics Manager arbeitete ich an Projekten in den Bereichen " ~ format_series(job_d_values) ~ " basieren.") -%}
 {%- endif -%}
 
 {%- if sections.fpna -%}
     {%- set job_e_defaults = ["Forecasting", "Budgetierung", "Performance Tracking"] -%}
     {%- set job_e_values = skills_job_block_e if skills_job_block_e else job_e_defaults -%}
-    {%- set _ = letter.blocks.append("Als Senior FP&A Analyst habe ich Berichte und Modelle für " ~ format_series(job_e_values) ~ " entwickelt.") -%}
+    {%- set _ = letter.blocks.append("Als Senior FP&A Analyst habe ich Berichte und Modelle erstellt, die die Bereiche " ~ format_series(job_e_values) ~ " unterstützen.") -%}
 {%- endif -%}
 
 {%- if sections.degrees_certs -%}
@@ -94,12 +94,12 @@
 {%- endif -%}
 
 {%- if sections.languages_company -%}
-    {%- set _ = letter.blocks.append("Sprachlich bewege ich mich sicher in " ~ (languages | join(" & ")) ~ ". Ich suche bewusst ein Unternehmen mit " ~ company_features[0] ~ ", " ~ company_features[1] ~ " und " ~ company_features[2] ~ " wie " ~ (company or "Ihr Unternehmen") ~ ", um meine vielseitige Erfahrung einzubringen. Ich freue mich, wenn Sie meine Bewerbung berücksichtigen.") -%}
+    {%- set _ = letter.blocks.append("Ich spreche " ~ (languages | join(" & ")) ~ " und bin bereit für meine nächste berufliche Herausforderung.") -%}
 {%- endif -%}
 
 {%- if sections.goodbye_block -%}
     {%- set goodbye_lines = [
-        "Ich freue mich auf Ihre Rückmeldung.",
+        "Über eine Einladung zu einem persönlichen Vorstellungsgespräch freue ich mich sehr.",
         "",
         "Mit freundlichen Grüßen",
         name

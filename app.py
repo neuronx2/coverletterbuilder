@@ -14,7 +14,10 @@ from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate
 
-PROFILE_FILE = Path("profile.yaml")
+PROFILE_FILES = {
+    "en": Path("profile.yaml"),
+    "de": Path("profile_de.yaml"),
+}
 DEGREES_FILE = Path("degrees.yaml")
 CERTIFICATIONS_FILE = Path("certifications.yaml")
 LANGUAGE_OPTIONS = {
@@ -263,8 +266,8 @@ def _load_skill_sources(language: str) -> dict[str, list[str]]:
     return sources
 
 
-def load_profile():
-    profile = _load_yaml(PROFILE_FILE)
+def load_profile(path: Path):
+    profile = _load_yaml(path)
 
     degrees = _load_list_from_file(DEGREES_FILE, "degrees")
     certifications = _load_list_from_file(CERTIFICATIONS_FILE, "certifications")
@@ -524,8 +527,6 @@ st.set_page_config(page_title="Cover Letter Lego Builder", layout="wide")
 
 st.title("Cover Letter Lego Builder")
 
-profile = load_profile()
-
 language_codes = list(LANGUAGE_OPTIONS.keys())
 default_index = language_codes.index(DEFAULT_LANGUAGE) if DEFAULT_LANGUAGE in language_codes else 0
 selected_language = st.sidebar.selectbox(
@@ -549,6 +550,8 @@ def t(key: str, **kwargs: str) -> str:
 
 template = load_template(language_config["template_path"])
 skills_sources = _load_skill_sources(selected_language)
+profile_file = PROFILE_FILES.get(selected_language, PROFILE_FILES[DEFAULT_LANGUAGE])
+profile = load_profile(profile_file)
 
 JOB_FIELDS = ("company", "position", "hiring_manager", "city", "region", "country")
 for field in JOB_FIELDS:

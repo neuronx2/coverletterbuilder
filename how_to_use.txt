@@ -73,5 +73,5 @@
 - In the app, use the “Qualifications & Credentials” sidebar expander to pick which degrees/certs to include or to add temporary entries.
 
 ## Tips
-- Use `profile.yaml` for contact details, stakeholders, teams, and other reusable lists.
+- Use `profile.yaml` (English) / `profile_de.yaml` (German) for contact details, stakeholders, teams, and other reusable lists.
 - After editing YAML/JSON files, rerun the app (or CLI) so the new data flows into your cover letter.

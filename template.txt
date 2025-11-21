@@ -66,13 +66,13 @@
     {%- set job_c_defaults = ["Market Strategy", "Data Analytics", "Stakeholder Management", "SQL"] -%}
     {%- set job_c_values = skills_job_block_c if skills_job_block_c else job_c_defaults -%}
     {%- set job_c_focus = job_c_values[:4] if job_c_values else job_c_defaults -%}
-    {%- set _ = letter.blocks.append("As a Project Manager, I have successfully delivered market research projects related to " ~ format_series(job_c_focus) ~ ".") -%}
+    {%- set _ = letter.blocks.append("As a Project Manager, I have successfully delivered multiple projects related to " ~ format_series(job_c_focus) ~ ".") -%}
 {%- endif -%}
 
 {%- if sections.business_analytics -%}
     {%- set job_d_defaults = ["change management", "analytics enablement"] -%}
     {%- set job_d_values = skills_job_block_d if skills_job_block_d else job_d_defaults -%}
-    {%- set _ = letter.blocks.append("As Business Analytics Manager, I delivered change management projects and translated business requirements into analytics solutions and actionable recommendations anchored in " ~ format_series(job_d_values) ~ ".") -%}
+    {%- set _ = letter.blocks.append("As Business Analytics Manager, I worked on projects anchored in " ~ format_series(job_d_values) ~ ".") -%}
 {%- endif -%}
 
 {%- if sections.fpna -%}
