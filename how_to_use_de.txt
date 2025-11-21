@@ -1,0 +1,63 @@
+# So nutzt du den Cover Letter Generator
+
+## Was das Tool bietet
+- Erstellt maßgeschneiderte Anschreiben aus modularen Textbausteinen.
+- Kombiniere Abschnitte frei, passe Inhalte je Job an und exportiere als DOCX/PDF.
+- Wiederkehrende Daten (Abschlüsse, Zertifizierungen, Skills, Kontakte etc.) liegen in YAML/JSON-Dateien und lassen sich ohne Code-Anpassungen pflegen.
+- Unterstützt Englisch & Deutsch: Über das Sprach-Dropdown in der Sidebar wechselst du zwischen `template.txt` und `template_de.txt` inkl. passender Skills-Dateien.
+
+## Einstieg (macOS & Windows)
+1. **Projekt herunterladen oder klonen** – z. B. `git clone …` oder ZIP entpacken. Stelle sicher, dass Dateien wie `app.py`, `requirements.txt` und der Ordner `templates/` vorhanden sind.
+2. **Terminal im Projektordner öffnen**
+   - macOS/Linux: Terminal öffnen, `cd /pfad/zum/coverletter\ generator`.
+   - Windows: PowerShell oder Eingabeaufforderung → `cd "C:\Pfad\zum\coverletter generator"`.
+3. **(Optional) Virtuelle Umgebung anlegen**
+   - macOS/Linux:
+     ```bash
+     python3 -m venv .venv
+     source .venv/bin/activate
+     ```
+   - Windows (PowerShell):
+     ```powershell
+     python -m venv .venv
+     .\.venv\Scripts\Activate.ps1
+     ```
+4. **Abhängigkeiten installieren**
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+5. **Streamlit-App starten**
+   ```bash
+   streamlit run app.py
+   ```
+   Browser öffnet sich automatisch (alternativ `http://localhost:8501`). Wähle die Sprache und fülle die Sidebar-Felder (Bewerber- und Unternehmensdaten) aus.
+   - Den finalen Text kannst du direkt im Bereich „Cover letter text“ bearbeiten. Änderungen erscheinen sofort in der Vorschau und in den Exporten.
+   - Der Dateiname wird automatisch aus Firmenname + Jobtitel erzeugt (inkl. Datum, falls verfügbar). Du kannst ihn bei Bedarf überschreiben.
+   - Wechsel im Sprachmenü zu „Deutsch“, um die deutsche Vorlage samt Skills-Listen zu nutzen.
+
+## Standardtexte anpassen
+- Die Streamlit-Version liest `template.txt` (Deutsch: `template_de.txt`). Jeder Abschnitt (Intro, Jobblöcke, Abschlüsse usw.) ist dort hinterlegt.
+- Formuliere Sätze direkt in der Template-Datei um. Beispiel: ändere den Text im Block `{% if sections.intro %}`.
+- Für die CLI (`cover_letter_generator`) bearbeitest du die einzelnen Jinja-Dateien unter `templates/sections/*.j2`.
+- Die UI erlaubt zusätzlich Live-Änderungen im Textfeld – praktisch für Feinschliff vor dem Download.
+
+## Skills verwalten
+- Pro Abschnitt gibt es eigene YAML-Dateien:
+  - `skills_intro.yaml` / `skills_intro_de.yaml`
+  - `skills_job_block_a.yaml` / `_de.yaml`
+  - … bis `skills_job_block_e.yaml`
+- Aufbau:
+  ```yaml
+  skills:
+    - "Produktstrategie"
+    - "Datenanalysen"
+  ```
+- Passe die Listen an oder nutze den Sidebar-Abschnitt „Skills by Block“, um Skills gezielt auszuwählen oder neu hinzuzufügen.
+
+## Abschlüsse & Zertifizierungen
+- Abschlüsse liegen in `degrees.yaml`, Zertifizierungen in `certifications.yaml` (gleiche Struktur).
+- Über den Sidebar-Abschnitt „Abschlüsse und Zertifizierungen“ steuerst du, welche Einträge im aktuellen Anschreiben erscheinen – inklusive Möglichkeit, neue Items ad hoc hinzuzufügen.
+
+## Weitere Hinweise
+- `profile.yaml` speichert Kontakte, Stakeholder, Teams und weitere wiederkehrende Infos.
+- Nach Änderungen an YAML/JSON-Dateien die App neu laden, damit die Inhalte übernommen werden.

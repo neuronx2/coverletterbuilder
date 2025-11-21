@@ -1,0 +1,77 @@
+# How to Use the Cover Letter Generator
+
+## What This Product Does
+- Generates tailored cover letters using modular blocks (lego-style).
+- Lets you mix and match paragraphs, customize content per job, and export as DOCX/PDF.
+- Pulls reusable info (degrees, certifications, skills, contact links, etc.) from YAML/JSON files, so you can refresh letters without editing code.
+- Supports multiple languages (English & German). Pick the language from the sidebar dropdown; the app swaps templates (`template.txt` / `template_de.txt`) and skill sources automatically.
+
+## Getting Started (Mac & Windows)
+1. **Download or clone the folder** from GitHub (e.g., `git clone ...` or download the ZIP and unzip it). Make sure you can see files like `app.py`, `requirements.txt`, and the `templates/` directory.
+2. **Open a terminal in the project folder**:
+   - macOS/Linux: use Terminal, run `cd /path/to/coverletter\ generator`.
+   - Windows: open Command Prompt or PowerShell, run `cd "C:\path\to\coverletter generator"`.
+3. **Optional: create a virtual environment** (recommended):
+   - macOS/Linux:
+     ```bash
+     python3 -m venv .venv
+     source .venv/bin/activate
+     ```
+   - Windows (PowerShell):
+     ```powershell
+     python -m venv .venv
+     .\.venv\Scripts\Activate.ps1
+     ```
+4. **Install dependencies**:
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+   (Use `python3` on macOS/Linux if `python` points to Python 2.)
+5. **Run the Streamlit app**:
+   ```bash
+   streamlit run app.py
+   ```
+   Your browser opens automatically (or visit `http://localhost:8501`). Use the sidebar to pick a language, enter candidate/company details, and export the letter.
+   - You can also edit the final text directly in the “Cover letter text” area. Those edits flow into the preview and the downloaded files instantly, so you’re not limited to the default template wording.
+   - The suggested file name is auto-generated from the company and job title inputs (plus today’s date if available), but you can rename it before downloading.
+   - **For German users:** switch the language dropdown to “Deutsch” in the sidebar. The entire UI, template (`template_de.txt`), and skills YAMLs flip to German defaults—no extra command needed.
+
+## Editing the Main Default Text
+- The Streamlit version renders `template.txt` in the project root. Each block (Intro, Job blocks A–E, degrees/certifications, etc.) lives there. For the German experience edit `template_de.txt`.
+- Modify sentences directly in `template.txt`. For example, to change the intro line, edit the text inside the `{% if sections.intro %}` block:
+  ```jinja
+  "I am excited to apply for ..."
+  ```
+  Replace the quoted sentence with your own wording, keeping the Jinja placeholders (e.g., `{{ format_series(intro_focus) }}`) if you still want dynamic values.
+- If you use the CLI (`cover_letter_generator` package), edit the modular Jinja files under `templates/sections/*.j2` instead.
+- In the Streamlit UI you can also tweak the rendered letter directly in the “Cover letter text” editor. The preview pane now mirrors those edits instantly, so you can polish wording right before download. Language selection applies to the editor/preview as well.
+
+## Managing Skills
+- Default skills for each block live in dedicated YAML files:
+  - `skills_intro.yaml` (English) / `skills_intro_de.yaml` (German)
+  - `skills_job_block_a.yaml` / `skills_job_block_a_de.yaml`
+  - `skills_job_block_b.yaml` / `skills_job_block_b_de.yaml`
+  - `skills_job_block_c.yaml` / `skills_job_block_c_de.yaml`
+  - `skills_job_block_d.yaml` / `skills_job_block_d_de.yaml`
+  - `skills_job_block_e.yaml` / `skills_job_block_e_de.yaml`
+- Each file has a simple structure:
+  ```yaml
+  skills:
+    - "Market Strategy"
+    - "Data Analytics"
+  ```
+- Update these lists to change the default options. Inside the app, open the “Skills by Block” sidebar expander to select/deselect skills or add new ones on the fly.
+
+## Managing Degrees & Certifications
+- Degrees are stored in `degrees.yaml`:
+  ```yaml
+  degrees:
+    - "MSc Big Data & Business Analytics"
+    - "MBA (Finance & Marketing)"
+  ```
+- Certifications are stored in `certifications.yaml` with the same pattern.
+- In the app, use the “Qualifications & Credentials” sidebar expander to pick which degrees/certs to include or to add temporary entries.
+
+## Tips
+- Use `profile.yaml` for contact details, stakeholders, teams, and other reusable lists.
+- After editing YAML/JSON files, rerun the app (or CLI) so the new data flows into your cover letter.
