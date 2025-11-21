@@ -1,9 +1,9 @@
-name: "Kushagra Nehra"
-address_line1: "Eichborndamm"
+name: "Full Name"
+address_line1: "Address"
 address_line2: ""
-city: "Berlin"
-region: "Berlin"
-country: "Germany"
+city: "City"
+region: "Region/State"
+country: "Country"
 
 # Degrees live in degrees.yaml & certifications live in certifications.yaml
 # Block-specific skills now live in skills_*.yaml files
