@@ -1,0 +1,50 @@
+{
+  "applicant": {
+    "name": "Kushagra Example",
+    "email": "kushagra@example.com",
+    "phone": "+1 (555) 555-0100",
+    "city": "San Francisco",
+    "region": "CA",
+    "country": "USA"
+  },
+  "lists": {
+    "degrees": [
+      "Master of Science in Computer Science, Carnegie Mellon University",
+      "Bachelor of Technology in Computer Engineering, IIT Delhi",
+      "Certified Analytics Professional",
+      "Executive Leadership Program, Stanford University"
+    ],
+    "certifications": [
+      "PMP",
+      "Scaled Agile SPC",
+      "AWS Solutions Architect Associate",
+      "Google Data Analytics Professional Certificate",
+      "Coursera Product Management Specialization"
+    ],
+    "skills": [
+      "Product strategy",
+      "Stakeholder alignment",
+      "SQL & Python automation"
+    ],
+    "stakeholders": [
+      "C-suite executives",
+      "Cross-functional steering committees"
+    ],
+    "presented_to": [
+      "Board of Directors"
+    ],
+    "teams": [
+      "Design",
+      "Engineering",
+      "Product Marketing",
+      "Sales Enablement"
+    ]
+  },
+  "defaults": {
+    "company_features": ["Customer-first culture", "Responsible AI product line", "Global impact"],
+    "hiring_manager_fallback": "Hiring Manager",
+    "city_fallback": "San Francisco",
+    "region_fallback": "CA",
+    "country_fallback": "USA"
+  }
+}

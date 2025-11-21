@@ -1,0 +1,9 @@
+{{ applicant.name }}
+{{ applicant.email }}{% if applicant.phone %}, {{ applicant.phone }}{% endif %}
+{{ applicant.city }}, {{ applicant.region }}, {{ applicant.country }}
+
+{{ today }}
+{{ company or 'Hiring Organization' }}
+{{ location_block or '' }}
+
+Dear {{ hiring_manager }},

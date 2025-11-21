@@ -1,0 +1,11 @@
+{
+  "sections": [
+    { "template": "sections/00_header.j2", "enabled": true },
+    { "template": "sections/01_intro.j2", "enabled": true },
+    { "template": "sections/02_company_focus.j2", "enabled": true },
+    { "template": "sections/03_credentials.j2", "enabled": true },
+    { "template": "sections/04_skills.j2", "enabled": true },
+    { "template": "sections/05_collaboration.j2", "enabled": true },
+    { "template": "sections/06_closing.j2", "enabled": true }
+  ]
+}

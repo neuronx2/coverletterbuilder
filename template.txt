@@ -1,0 +1,114 @@
+{%- set letter = namespace(blocks=[]) -%}
+{%- set right_width = 130 -%}
+{%- set right_format = ('%' ~ right_width ~ 's') -%}
+{%- macro format_series(items) -%}
+    {%- if items|length == 0 -%}{%- elif items|length == 1 -%}{{ items[0] }}{%- elif items|length == 2 -%}{{ items[0] }} & {{ items[1] }}{%- else -%}{{ items[:-1] | join(", ") }} & {{ items[-1] }}{%- endif -%}
+{%- endmacro -%}
+
+{%- set candidate_lines = [] -%}
+{%- if sections.candidate_block -%}
+    {%- if name -%}{%- set _ = candidate_lines.append(right_format % name) -%}{%- endif -%}
+    {%- if address_line1 -%}{%- set _ = candidate_lines.append(right_format % address_line1) -%}{%- endif -%}
+    {%- if address_line2 -%}{%- set _ = candidate_lines.append(right_format % address_line2) -%}{%- endif -%}
+    {%- if home_location -%}{%- set _ = candidate_lines.append(right_format % home_location) -%}{%- endif -%}
+{%- endif -%}
+
+{%- if candidate_lines -%}
+    {%- set _ = letter.blocks.append(candidate_lines | join('\n')) -%}
+{%- endif -%}
+
+{%- if sections.company_block -%}
+    {%- set location_line = (city or "City") ~ (", " + region if region else "") ~ (", " + country if country else "") ~ "." -%}
+    {%- set company_lines = [
+        (company or "Company") ~ ",",
+        (hiring_manager or "Hiring Manager") ~ ",",
+        location_line
+    ] -%}
+    {%- set _ = letter.blocks.append(company_lines | join('\n')) -%}
+{%- endif -%}
+
+{%- if sections.subject_block -%}
+    {%- set _ = letter.blocks.append("Application for " ~ (position or "Position")) -%}
+{%- endif -%}
+
+{%- if sections.greeting_block -%}
+    {%- set _ = letter.blocks.append("Dear " ~ (hiring_manager or "Hiring Manager") ~ ",") -%}
+{%- endif -%}
+
+{%- if sections.intro -%}
+    {%- set intro_defaults = ["product strategy", "data analytics", "stakeholder management"] -%}
+    {%- set intro_values = skills_intro if skills_intro else intro_defaults -%}
+    {%- set intro_focus = intro_values[:3] if intro_values else intro_defaults -%}
+    {%- set intro_lines = [
+        "I am excited to apply for the position of " ~ (position or "this role") ~ ", which I came to know of through " ~ awareness_source ~ ". My interest in this position originates from my experience in " ~ format_series(intro_focus) ~ "."
+    ] -%}
+    {%- set _ = letter.blocks.append(intro_lines | join('\n')) -%}
+{%- endif -%}
+
+{%- if sections.market_dev -%}
+    {%- set job_a_defaults = ["SQL automation", "Power BI", "market strategy"] -%}
+    {%- set job_a_values = skills_job_block_a if skills_job_block_a else job_a_defaults -%}
+    {%- set job_a_focus = job_a_values[:3] if job_a_values else job_a_defaults -%}
+    {%- set partner_line = stakeholders[0] ~ (" & " ~ stakeholders[1] if stakeholders|length > 1 else "") -%}
+    {%- set market_lines = [
+        "In my previous role as Strategy Manager (New Market Development), I led strategic projects related to " ~ format_series(job_a_focus) ~ " by working closely with " ~ partner_line ~ " from the " ~ teams[0] ~ ", " ~ teams[1] ~ ", " ~ teams[2] ~ " & " ~ teams[3] ~ " teams and presenting business cases/proposals to " ~ presented_to[0] ~ "."
+    ] -%}
+    {%- set _ = letter.blocks.append(market_lines | join('\n')) -%}
+{%- endif -%}
+
+{%- if sections.senior_bi -%}
+    {%- set job_b_defaults = ["Data Analytics", "Data Science"] -%}
+    {%- set job_b_values = skills_job_block_b if skills_job_block_b else job_b_defaults -%}
+    {%- set _ = letter.blocks.append("Before my previous job, I worked as Senior BI Analyst/Inhouse Consultant where I leveraged my understanding of data & infrastructure to deliver end-to-end data projects involving " ~ format_series(job_b_values) ~ " to generate insights.") -%}
+{%- endif -%}
+
+{%- if sections.project_manager -%}
+    {%- set job_c_defaults = ["Market Strategy", "Data Analytics", "Stakeholder Management", "SQL"] -%}
+    {%- set job_c_values = skills_job_block_c if skills_job_block_c else job_c_defaults -%}
+    {%- set job_c_focus = job_c_values[:4] if job_c_values else job_c_defaults -%}
+    {%- set _ = letter.blocks.append("As a Project Manager, I have successfully delivered market research projects related to " ~ format_series(job_c_focus) ~ ".") -%}
+{%- endif -%}
+
+{%- if sections.business_analytics -%}
+    {%- set job_d_defaults = ["change management", "analytics enablement"] -%}
+    {%- set job_d_values = skills_job_block_d if skills_job_block_d else job_d_defaults -%}
+    {%- set _ = letter.blocks.append("As Business Analytics Manager, I delivered change management projects and translated business requirements into analytics solutions and actionable recommendations anchored in " ~ format_series(job_d_values) ~ ".") -%}
+{%- endif -%}
+
+{%- if sections.fpna -%}
+    {%- set job_e_defaults = ["forecasting", "budgeting", "performance tracking"] -%}
+    {%- set job_e_values = skills_job_block_e if skills_job_block_e else job_e_defaults -%}
+    {%- set _ = letter.blocks.append("As Senior FP&A Analyst, I created reports and models supporting " ~ format_series(job_e_values) ~ ".") -%}
+{%- endif -%}
+
+{%- if sections.degrees_certs -%}
+    {%- set degrees_text = degrees | join(", ") -%}
+    {%- if degrees | length > 1 -%}
+        {%- set degrees_text = ", ".join(degrees[:-1]) ~ " & " ~ degrees[-1] -%}
+    {%- endif -%}
+    {%- set certs_text = certifications | join(", ") -%}
+    {%- if certifications | length > 1 -%}
+        {%- set certs_text = ", ".join(certifications[:-1]) ~ " & " ~ certifications[-1] -%}
+    {%- endif -%}
+    {%- set _ = letter.blocks.append("I hold " ~ degrees_text ~ " along with " ~ certs_text ~ " certifications.") -%}
+{%- endif -%}
+
+{%- if sections.languages_company -%}
+    {%- set _ = letter.blocks.append("About spoken languages, I speak " ~ (languages | join(" & ")) ~ ". I have been looking for a " ~ company_features[0] ~ ", " ~ company_features[1] ~ " and " ~ company_features[2] ~ " organization like " ~ (company or "your company") ~ ", where I can add value through my diversified experience. I hope that you find my profile relevant to the job.") -%}
+{%- endif -%}
+
+{%- if sections.goodbye_block -%}
+    {%- set goodbye_lines = [
+        "Looking forward to hearing from you.",
+        "",
+        "Regards,",
+        name
+    ] -%}
+    {%- if contact_links -%}
+        {%- set labels = contact_links | map(attribute='label') | list -%}
+        {%- set goodbye_lines = goodbye_lines + [labels | join(" | ")] -%}
+    {%- endif -%}
+    {%- set _ = letter.blocks.append(goodbye_lines | join('\n')) -%}
+{%- endif -%}
+
+{{- letter.blocks | join('\n\n') -}}

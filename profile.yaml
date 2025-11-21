@@ -1,0 +1,40 @@
+name: "Kushagra Nehra"
+address_line1: "Eichborndamm"
+address_line2: ""
+city: "Berlin"
+region: "Berlin"
+country: "Germany"
+
+# Degrees live in degrees.yaml & certifications live in certifications.yaml
+# Block-specific skills now live in skills_*.yaml files
+
+stakeholders:
+  - "Senior Management"
+  - "Cross-functional Leadership"
+  - "External Partners"
+
+presented_to:
+  - "C-level executives"
+
+teams:
+  - "Marketing"
+  - "Sales"
+  - "Operations"
+  - "Finance"
+
+company_features:
+  - "data-driven culture"
+  - "customer-centric focus"
+  - "fast-growing international footprint"
+
+languages: ["English", "German"]
+
+contact_links:
+  - label: "Email"
+    value: "nehra.kushagra@gmail.com"
+  - label: "LinkedIn"
+    value: "https://www.linkedin.com/in/example"
+  - label: "Xing"
+    value: "https://www.xing.com/profile/example"
+  - label: "Website"
+    value: "https://portfolio.example.com"

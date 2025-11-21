@@ -1,0 +1,7 @@
+streamlit
+jinja2
+pyyaml
+python-docx
+requests
+beautifulsoup4
+reportlab
